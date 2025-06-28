@@ -1,4 +1,4 @@
-module github.com/Dosada05/todolist_final
+module "github.com/LTVgreater5CPi/go_final_project/tasks_service"
 
 go 1.23.1
 
