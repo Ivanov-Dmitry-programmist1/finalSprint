@@ -1,44 +1,63 @@
-package main
+package db
 
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
-	"path/filepath"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
-func setupDB() (*sql.DB, error) {
-	dbPath := os.Getenv("TODO_DBFILE")
-	if dbPath == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("ошибка директории: %v", err)
-		}
-		dbPath = filepath.Join(cwd, "scheduler.db")
+var db *sql.DB
+
+func CloseDB() error {
+	if db != nil {
+		return db.Close()
 	}
-	db, err := sql.Open("sqlite3", dbPath)
+	return nil
+}
+
+const schema = `
+CREATE TABLE IF NOT EXISTS scheduler (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date CHAR(8) NOT NULL DEFAULT "",
+    title VARCHAR(255) NOT NULL,
+    comment TEXT,
+    repeat VARCHAR(128)
+);
+
+CREATE INDEX IF NOT EXISTS idx_date ON scheduler(date);
+`
+
+func Init(dbFile string) error {
+	// Проверяем существование файла
+	_, err := os.Stat(dbFile)
+	var install bool
 	if err != nil {
-		return nil, fmt.Errorf("ошибка при подключении к БД: %v", err)
+		install = true
 	}
 
-	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
-		createTableQuery := `
-		CREATE TABLE scheduler (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			date TEXT NOT NULL,
-			title TEXT NOT NULL,
-			comment TEXT,
-			repeat TEXT(128)
-		);
-		CREATE INDEX idx_date ON scheduler(date);
-		`
-		if _, err := db.Exec(createTableQuery); err != nil {
-			db.Close()
-			return nil, fmt.Errorf("ошибка при создании таблицы: %v", err)
+	// Открываем или создаем базу данных
+	db, err = sql.Open("sqlite", dbFile)
+	if err != nil {
+		return fmt.Errorf("не удалось открыть базу данных: %w", err)
+	}
+
+	// Проверяем соединение
+	err = db.Ping()
+	if err != nil {
+		return fmt.Errorf("не удалось установить соединение: %w", err)
+	}
+
+	// Если файл не существовал, создаем схему
+	if install {
+		_, err = db.Exec(schema)
+		if err != nil {
+			return fmt.Errorf("ошибка создания схемы: %w", err)
 		}
+		log.Println("База данных успешно создана")
 	}
 
-	return db, nil
+	return nil
 }
