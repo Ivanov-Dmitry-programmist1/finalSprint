@@ -1,12 +1,14 @@
-package database
+package main
 
 import (
 	"database/sql"
-	"log"
-	_ "modernc.org/sqlite"
+	"fmt"
 	"os"
 	"path/filepath"
+
+	_ "github.com/mattn/go-sqlite3"
 )
+
 func setupDB() (*sql.DB, error) {
 	dbPath := os.Getenv("TODO_DBFILE")
 	if dbPath == "" {
