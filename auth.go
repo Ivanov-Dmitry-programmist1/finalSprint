@@ -18,6 +18,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// middleware
 func authMidW(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if appPassword == "" {
@@ -54,6 +55,7 @@ func generateToken() (string, error) {
 	return token.SignedString(jwtKey)
 }
 
+// Обработчик для /api/signin
 func signInHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
