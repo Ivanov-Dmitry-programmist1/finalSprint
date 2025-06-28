@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/LTVgreater5CPi/finalSprint/works"
+	"github.com/LTVgreater5CPi/go_final_project/tasks_service"
 
 	_ "github.com/mattn/go-sqlite3"
 )
