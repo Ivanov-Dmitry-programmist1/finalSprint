@@ -1,4 +1,4 @@
-module "github.com/LTVgreater5CPi/go_final_project/tasks_service"
+module github.com/LTVgreater5CPi/go_final_project
 
 go 1.23.1
 replace go1f => ./
