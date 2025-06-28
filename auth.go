@@ -1,14 +1,23 @@
-package tools
+package main
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"fmt"
-	"github.com/golang-jwt/jwt/v5"
+	"database/sql"
+	"encoding/json"
 	"net/http"
 	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
-// middleware
+
+var jwtKey = []byte("password")
+var appPassword = os.Getenv("TODO_PASSWORD")
+
+type Claims struct {
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
+
 func authMidW(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if appPassword == "" {
@@ -45,7 +54,6 @@ func generateToken() (string, error) {
 	return token.SignedString(jwtKey)
 }
 
-// Обработчик для /api/signin
 func signInHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
